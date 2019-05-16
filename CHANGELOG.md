@@ -14,3 +14,7 @@
 ## 0.1.4
 
 - Fixed a serious problem =)
+
+## 0.1.5
+
+- Now all the provided APIs work properly =)

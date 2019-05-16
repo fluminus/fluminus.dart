@@ -1,6 +1,6 @@
 name: luminus_api
 description: A library for Dart developers who's in need of LumiNUS API.
-version: 0.1.4
+version: 0.1.5
 homepage: https://github.com/fluminus/luminus_api
 author: Tan Yuanhong <leotan.yh@gmail.com>
 

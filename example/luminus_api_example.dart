@@ -9,5 +9,18 @@ main(List<String> args) async {
   var modules = await API.getModules(auth);
   for (Module mod in modules) {
     print(mod.courseName);
+    print(mod.id);
+    print(await API.getAnnouncements(auth, mod));
+    var dirs = await API.getModuleDirectories(auth, mod);
+    for(var dir in dirs) {
+      var items = await API.getItemsFromDirectory(auth, dir);
+      print(items);
+      for(var item in items) {
+        if(item is File) {
+          print(await API.getDownloadUrl(auth, item));
+        }
+      }
+    }
   }
+  print(await API.getProfile(auth));
 }
