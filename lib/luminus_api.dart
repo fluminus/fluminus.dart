@@ -21,30 +21,6 @@ import 'package:luminus_api/src/profile.dart';
 import 'package:luminus_api/src/file.dart';
 import 'package:luminus_api/src/authorization.dart';
 
-main(List<String> args) async {
-  // Remember to load the env var for the main() of your own application!
-  load();
-  Authentication auth = new Authentication(
-      password: env['LUMINUS_PASSWORD'], username: env['LUMINUS_USERNAME']);
-  var modules = await API.getModules(auth);
-  for (Module mod in modules) {
-    print(mod.courseName);
-    print(mod.id);
-    print(await API.getAnnouncements(auth, mod));
-    var dirs = await API.getModuleDirectories(auth, mod);
-    for (var dir in dirs) {
-      var items = await API.getItemsFromDirectory(auth, dir);
-      print(items);
-      for (var item in items) {
-        if (item is File) {
-          print(await API.getDownloadUrl(auth, item));
-        }
-      }
-    }
-  }
-  print(await API.getProfile(auth));
-}
-
 class API {
   // API access infrastructure
 
@@ -73,6 +49,7 @@ class API {
 
   // Module related APIs
 
+  /// Returns a list of [Module] taken by user specified by [auth]
   static Future<List<Module>> getModules(Authentication auth) async {
     Map resp = await _rawAPICall(auth: auth, path: '/module');
     var modules = new ModuleResponse.fromJson(resp);
@@ -81,6 +58,8 @@ class API {
 
   // Announcement related APIs
 
+  /// Returns a list of [Announcement] from [module] taken by user specified by [auth].
+  /// [archived] is default as `false`, which limits the returned result to the latest semester,
   static Future<List<Announcement>> getAnnouncements(
       Authentication auth, Module module,
       {bool archived = false}) async {
@@ -94,6 +73,7 @@ class API {
 
   // Personal information related APIs
 
+  /// Returns a [Profile] object
   static Future<Profile> getProfile(Authentication auth) async {
     Map resp = await API._rawAPICall(auth: auth, path: "/user/profile");
     var profile = new Profile.fromJson(resp);
@@ -102,13 +82,17 @@ class API {
 
   // File related APIs
 
+  /// Returns a list of [Directory] rooted with the given [module].
+  /// Normally there shouldn't be [File] under a [Module], if such things do happen,
+  /// or LumiNUS does allow module coordinators to do so, please post an issue in GitHub.
   static Future<List<Directory>> getModuleDirectories(
       Authentication auth, Module module) async {
-    Map resp =
-        await API._rawAPICall(auth: auth, path: "/files/?ParentID=${module.id}");
+    Map resp = await API._rawAPICall(
+        auth: auth, path: "/files/?ParentID=${module.id}");
     return (new SubdirectoryResponse.fromJson(resp)).data;
   }
 
+  /// Returns a list of [Directory] rooted with the given [dir].
   static Future<List<Directory>> getSubdirectories(
       Authentication auth, Directory dir) async {
     Map resp =
@@ -116,6 +100,10 @@ class API {
     return (new SubdirectoryResponse.fromJson(resp)).data;
   }
 
+  /// Returns a list of [BasicFile] rooted with the given [dir].
+  /// *items* in the function name refer to both [Directory] and [File], which
+  /// are subclasses of [BasicFile], by calling this function we can display
+  /// both files and subdirectories under [dir].
   static Future<List<BasicFile>> getItemsFromDirectory(
       Authentication auth, Directory dir) async {
     // Get the subdirectories
@@ -131,6 +119,7 @@ class API {
     return list;
   }
 
+  /// Return the download url of a given [file], note that this url can only be used once.
   static Future<String> getDownloadUrl(Authentication auth, File file) async {
     Map resp = await API._rawAPICall(
         auth: auth, path: "/files/file/${file.id}/downloadUrl");

@@ -12,11 +12,11 @@ main(List<String> args) async {
     print(mod.id);
     print(await API.getAnnouncements(auth, mod));
     var dirs = await API.getModuleDirectories(auth, mod);
-    for(var dir in dirs) {
+    for (var dir in dirs) {
       var items = await API.getItemsFromDirectory(auth, dir);
       print(items);
-      for(var item in items) {
-        if(item is File) {
+      for (var item in items) {
+        if (item is File) {
           print(await API.getDownloadUrl(auth, item));
         }
       }

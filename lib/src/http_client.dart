@@ -6,7 +6,6 @@ import 'package:cookie_jar/cookie_jar.dart';
 class HTTPClient {
   Dio dio = Dio();
   CookieManager cm;
-  List<Cookie> cookies = List();
 
   HTTPClient() {
     dio.interceptors.add(CookieManager(CookieJar()));
@@ -14,10 +13,12 @@ class HTTPClient {
   }
 
   Future<Response> get(String url,
-      {Map<String, String> headers = const {}}) async {
+      {Map<String, String> headers = const {},
+      Iterable<Cookie> cookies = const []}) async {
     Response resp = await dio.get(url,
         options: Options(
             headers: headers,
+            cookies: cookies,
             followRedirects: false,
             validateStatus: (status) {
               return status < 500;

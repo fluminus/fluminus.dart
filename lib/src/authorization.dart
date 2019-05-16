@@ -1,18 +1,33 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 import 'package:convert/convert.dart' as conv;
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as parser;
 import 'package:luminus_api/src/http_client.dart';
+import 'package:meta/meta.dart';
 
 class Authorization {
+  /// [idsrv] is the Cookie used for JWT renewal, which is valid for 24 hours.
   String idsrv;
+
+  /// [jwt] is only valid for 1 hour.
   String jwt;
-  Authorization({this.idsrv, this.jwt});
+  DateTime idsrvLastUpdated;
+  DateTime jwtLastUpdated;
+
+  // Authorization({@required idsrv, this.jwt, this.idsrvLastUpdated, this.jwtLastUpdated});
+  Authorization(
+      {@required this.idsrv,
+      @required this.jwt,
+      @required this.idsrvLastUpdated,
+      @required this.jwtLastUpdated});
 
   @override
   String toString() {
-    return 'Authorization: {idsrv: ${this.idsrv}; jwt: ${this.jwt}}';
+    return 'Authorization: ' +
+        '{idsrv (last updated at ${this.idsrvLastUpdated.toUtc().toString()}):\n${this.idsrv}; ' +
+        'jwt (last updated at ${this.jwtLastUpdated.toUtc().toString()}):\n${this.jwt};}';
   }
 }
 
@@ -38,11 +53,20 @@ class Authentication {
   Future<Authorization> getAuth() async {
     // TODO: add expiry time check
     if (jwt != null) {
-      return jwt;
+      if (!_isJwtExpired(jwt)) {
+        print('jwt is not expired');
+      } else if (!_isCookieExpired(jwt)) {
+        print('jwt is expired but renewed from cookie');
+        jwt = await _renewJwt(jwt);
+      } else {
+        print('request for new jwt');
+        jwt = await _getJwt(this.username, this.password);
+      }
     } else {
+      print('request for new jwt');
       jwt = await _getJwt(this.username, this.password);
-      return jwt;
     }
+    return jwt;
   }
 
   static Future<Authorization> _getJwt(String username, String password) async {
@@ -56,27 +80,61 @@ class Authentication {
     var loc1 = t1.headers.value('location');
     var t2 = await client.get(loc1);
     // For the use of 'idsrv' field later, don't know how to avoid a second request, will figure out later.
-    client.cookies = client.cm.cookieJar.loadForRequest(Uri.parse(loc1));
+    List<Cookie> cookies = List();
+    cookies = client.cm.cookieJar.loadForRequest(Uri.parse(loc1));
     var location = t2.headers.value('location');
     String idsrv;
-    for (var c in client.cookies) {
+    for (var c in cookies) {
       if (c.name == 'idsrv') {
         idsrv = c.value;
         break;
       }
     }
-    if (idsrv == null) throw Error();
-    return Authorization(idsrv: idsrv, jwt: _handleCallback(location));
+    if (idsrv == null) throw Exception(['idsrv field is empty']);
+    // TODO: time information can be extracted from headers
+    return Authorization(
+        idsrv: idsrv,
+        jwt: _handleCallback(location),
+        idsrvLastUpdated: DateTime.now(),
+        jwtLastUpdated: DateTime.now());
+  }
+
+  static Future<Authorization> _renewJwt(Authorization auth) async {
+    String authEndpointUri = await _getAuthEndpointUri();
+    var authResponse = await client
+        .get(authEndpointUri, cookies: [Cookie('idsrv', auth.idsrv)]);
+    var location = authResponse.headers.value('location');
+    // TODO: time information can be extracted from headers
+    return Authorization(
+        idsrv: auth.idsrv,
+        jwt: _handleCallback(location),
+        idsrvLastUpdated: auth.idsrvLastUpdated,
+        jwtLastUpdated: DateTime.now());
+  }
+
+  static bool _isCookieExpired(Authorization auth) {
+    return DateTime.now()
+            .difference(auth.idsrvLastUpdated)
+            .compareTo(const Duration(hours: 24)) >
+        0;
+  }
+
+  static bool _isJwtExpired(Authorization auth) {
+    return DateTime.now()
+            .difference(auth.jwtLastUpdated)
+            .compareTo(const Duration(hours: 1)) >
+        0;
   }
 
   static String _handleCallback(String location) {
     var parsed = Uri.parse(location);
     if (parsed.hasFragment) {
+      // TODO: there should be better ways of parsing the fragment...
       var dummy = Uri.parse('https://dummy.com?' + parsed.fragment);
       var token = dummy.queryParameters['id_token'];
       return token;
     } else {
-      throw Error();
+      throw Exception(['Callback format is invalid']);
     }
   }
 
@@ -100,9 +158,8 @@ class Authentication {
       map['xsrf_value'] = parsed['antiForgery']['value'];
       return map;
     } catch (e) {
-      print(e);
+      throw Exception(['Failed to get auth login info: ' + e.toString()]);
     }
-    return null;
   }
 
   // Generate crypto random bytes in Dart:
@@ -116,15 +173,13 @@ class Authentication {
   static Future<String> _getAuthEndpointUri() async {
     String fullUri = _getFullAuthUri(DISCOVERY_PATH);
     var response = await http.get(fullUri).catchError((err) {
-      // TODO: handle error properly
-      print(err);
+      throw Exception(['Failed to get full auth URI']);
     });
     if (response.statusCode == 200) {
       String endpoint = jsonDecode(response.body)['authorization_endpoint'];
       return _getAuthEndpointUriWithParams(endpoint);
     } else {
-      // TODO: handle error properly
-      throw Error();
+      throw Exception(['Failed to get full auth URI']);
     }
   }
 
@@ -161,4 +216,11 @@ class Authentication {
     }
     return res;
   }
+}
+
+// Testing functions
+void testRenewJwt(Authentication auth) async {
+  Authorization autho = await auth.getAuth();
+  await new Future.delayed(const Duration(seconds: 5));
+  print(await Authentication._renewJwt(autho));
 }

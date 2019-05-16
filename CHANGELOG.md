@@ -22,3 +22,6 @@
 ## 0.1.6
 
 - Hide files that are necessary and exported inside `luminus_api.dart`
+- Fixed the dependency issue.
+- Added documentation.
+- Implemented automatic management of JWT renewal as long as you stick to the same `Authentication` objected created.
