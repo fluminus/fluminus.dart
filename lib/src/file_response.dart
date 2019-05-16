@@ -1,4 +1,4 @@
-import 'package:luminus_api/file.dart';
+import 'package:luminus_api/src/file.dart';
 
 class FileResponse {
   String status;

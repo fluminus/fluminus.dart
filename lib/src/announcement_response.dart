@@ -1,4 +1,4 @@
-import 'package:luminus_api/announcement.dart';
+import 'package:luminus_api/src/announcement.dart';
 
 class AnnouncementResponse {
   String status;

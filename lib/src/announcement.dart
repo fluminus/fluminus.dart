@@ -1,4 +1,4 @@
-import 'package:luminus_api/access.dart';
+import 'package:luminus_api/src/access.dart';
 
 class Announcement {
   String id;

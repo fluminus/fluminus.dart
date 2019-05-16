@@ -1,11 +1,11 @@
 library luminus_api;
 
 export 'src/luminus_api_base.dart';
-export 'package:luminus_api/module.dart';
-export 'package:luminus_api/announcement.dart';
-export 'package:luminus_api/profile.dart';
-export 'package:luminus_api/file.dart';
-export 'package:luminus_api/authorization.dart';
+export 'package:luminus_api/src/module.dart';
+export 'package:luminus_api/src/announcement.dart';
+export 'package:luminus_api/src/profile.dart';
+export 'package:luminus_api/src/file.dart';
+export 'package:luminus_api/src/authorization.dart';
 
 import 'package:dotenv/dotenv.dart' show load, env;
 import 'package:dio/dio.dart';
@@ -15,11 +15,11 @@ import 'src/download_response.dart';
 import 'src/file_response.dart';
 import 'src/module_response.dart';
 
-import 'package:luminus_api/module.dart';
-import 'package:luminus_api/announcement.dart';
-import 'package:luminus_api/profile.dart';
-import 'package:luminus_api/file.dart';
-import 'package:luminus_api/authorization.dart';
+import 'package:luminus_api/src/module.dart';
+import 'package:luminus_api/src/announcement.dart';
+import 'package:luminus_api/src/profile.dart';
+import 'package:luminus_api/src/file.dart';
+import 'package:luminus_api/src/authorization.dart';
 
 main(List<String> args) async {
   // Remember to load the env var for the main() of your own application!
@@ -32,11 +32,11 @@ main(List<String> args) async {
     print(mod.id);
     print(await API.getAnnouncements(auth, mod));
     var dirs = await API.getModuleDirectories(auth, mod);
-    for(var dir in dirs) {
+    for (var dir in dirs) {
       var items = await API.getItemsFromDirectory(auth, dir);
       print(items);
-      for(var item in items) {
-        if(item is File) {
+      for (var item in items) {
+        if (item is File) {
           print(await API.getDownloadUrl(auth, item));
         }
       }
@@ -46,16 +46,15 @@ main(List<String> args) async {
 }
 
 class API {
+  // API access infrastructure
+
   static final String OCM_APIM_SUBSCRIPTION_KEY =
       '6963c200ca9440de8fa1eede730d8f7e';
   static final String API_BASE_URL = 'https://luminus.azure-api.net';
 
   static var dio = Dio();
 
-  static Authentication myAuth = new Authentication(
-      username: env['LUMINUS_USERNAME'], password: env['LUMINUS_PASSWORD']);
-
-  static Future<Map> apiGet(Authorization auth, String path,
+  static Future<Map> _apiGet(Authorization auth, String path,
       {bool isTest = false}) async {
     Map<String, dynamic> headers = Map();
     headers['Authorization'] = 'Bearer ${auth.jwt}';
@@ -66,22 +65,26 @@ class API {
     return resp.data;
   }
 
-  static Future<Map> rawAPICall(
+  static Future<Map> _rawAPICall(
       {Authentication auth, String path, bool isTest = false}) async {
-    Map parsed = await apiGet(await auth.getAuth(), path);
+    Map parsed = await _apiGet(await auth.getAuth(), path);
     return parsed;
   }
 
+  // Module related APIs
+
   static Future<List<Module>> getModules(Authentication auth) async {
-    Map resp = await rawAPICall(auth: auth, path: '/module');
+    Map resp = await _rawAPICall(auth: auth, path: '/module');
     var modules = new ModuleResponse.fromJson(resp);
     return modules.data;
   }
 
+  // Announcement related APIs
+
   static Future<List<Announcement>> getAnnouncements(
       Authentication auth, Module module,
       {bool archived = false}) async {
-    Map resp = await API.rawAPICall(
+    Map resp = await API._rawAPICall(
         auth: auth,
         path:
             "/announcement/${archived ? 'Archived' : 'NonArchived'}/${module.id}?=displayFrom%20ASC");
@@ -89,35 +92,39 @@ class API {
     return announcements.data;
   }
 
+  // Personal information related APIs
+
   static Future<Profile> getProfile(Authentication auth) async {
-    Map resp = await API.rawAPICall(auth: auth, path: "/user/profile");
+    Map resp = await API._rawAPICall(auth: auth, path: "/user/profile");
     var profile = new Profile.fromJson(resp);
     return profile;
   }
 
+  // File related APIs
+
   static Future<List<Directory>> getModuleDirectories(
       Authentication auth, Module module) async {
     Map resp =
-        await API.rawAPICall(auth: auth, path: "/files/?ParentID=${module.id}");
+        await API._rawAPICall(auth: auth, path: "/files/?ParentID=${module.id}");
     return (new SubdirectoryResponse.fromJson(resp)).data;
   }
 
   static Future<List<Directory>> getSubdirectories(
       Authentication auth, Directory dir) async {
     Map resp =
-        await API.rawAPICall(auth: auth, path: "/files/?ParentID=${dir.id}");
+        await API._rawAPICall(auth: auth, path: "/files/?ParentID=${dir.id}");
     return (new SubdirectoryResponse.fromJson(resp)).data;
   }
 
   static Future<List<BasicFile>> getItemsFromDirectory(
       Authentication auth, Directory dir) async {
     // Get the subdirectories
-    var fileResp = FileResponse.fromJson(await API.rawAPICall(
+    var fileResp = FileResponse.fromJson(await API._rawAPICall(
         auth: auth,
         path:
             "/files/${dir.id}/file${dir.allowUpload ? '?populate=Creator' : ''}"));
     var dirResp = SubdirectoryResponse.fromJson(
-        await API.rawAPICall(auth: auth, path: "/files/?ParentID=${dir.id}"));
+        await API._rawAPICall(auth: auth, path: "/files/?ParentID=${dir.id}"));
     List<BasicFile> list = new List();
     if (fileResp != null) list.addAll(fileResp.data);
     if (dirResp != null) list.addAll(dirResp.data);
@@ -125,8 +132,8 @@ class API {
   }
 
   static Future<String> getDownloadUrl(Authentication auth, File file) async {
-    Map resp =
-        await API.rawAPICall(auth: auth, path: "/files/file/${file.id}/downloadUrl");
+    Map resp = await API._rawAPICall(
+        auth: auth, path: "/files/file/${file.id}/downloadUrl");
     return (new DownloadResponse.fromJson(resp)).data;
   }
 }

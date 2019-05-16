@@ -1,4 +1,4 @@
-import 'package:luminus_api/module.dart';
+import 'package:luminus_api/src/module.dart';
 
 class ModuleResponse {
   String status;

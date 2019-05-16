@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:convert/convert.dart' as conv;
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as parser;
-import 'package:luminus_api/http_client.dart';
+import 'package:luminus_api/src/http_client.dart';
 
 class Authorization {
   String idsrv;

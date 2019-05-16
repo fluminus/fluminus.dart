@@ -18,3 +18,7 @@
 ## 0.1.5
 
 - Now all the provided APIs work properly =)
+
+## 0.1.6
+
+- Hide files that are necessary and exported inside `luminus_api.dart`
