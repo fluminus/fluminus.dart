@@ -45,4 +45,14 @@ class Profile {
     data['displayPhoto'] = this.displayPhoto;
     return data;
   }
+
+  @override
+  String toString() {
+    return 'userID: ' +
+        this.userID +
+        '; matricNo: ' +
+        this.userMatricNo +
+        '; name: ' +
+        this.userNameOriginal;
+  }
 }

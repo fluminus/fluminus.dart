@@ -24,14 +24,25 @@ import 'package:luminus_api/authorization.dart';
 main(List<String> args) async {
   // Remember to load the env var for the main() of your own application!
   load();
-  Authentication auth =
-      new Authentication(password: env['LUMINUS_PASSWORD'], username: env['LUMINUS_USERNAME']);
+  Authentication auth = new Authentication(
+      password: env['LUMINUS_PASSWORD'], username: env['LUMINUS_USERNAME']);
   var modules = await API.getModules(auth);
   for (Module mod in modules) {
     print(mod.courseName);
     print(mod.id);
     print(await API.getAnnouncements(auth, mod));
+    var dirs = await API.getModuleDirectories(auth, mod);
+    for(var dir in dirs) {
+      var items = await API.getItemsFromDirectory(auth, dir);
+      print(items);
+      for(var item in items) {
+        if(item is File) {
+          print(await API.getDownloadUrl(auth, item));
+        }
+      }
+    }
   }
+  print(await API.getProfile(auth));
 }
 
 class API {
@@ -78,43 +89,44 @@ class API {
     return announcements.data;
   }
 
-  // static Future<Profile> getProfile(Authentication auth) async {
-  //   Map resp = await API.rawAPICall(auth: auth, path: "/profile");
-  //   var profile = new Profile.fromJson(resp);
-  //   return profile;
-  // }
+  static Future<Profile> getProfile(Authentication auth) async {
+    Map resp = await API.rawAPICall(auth: auth, path: "/user/profile");
+    var profile = new Profile.fromJson(resp);
+    return profile;
+  }
 
-  // static Future<List<Directory>> getModuleDirectories(
-  //     Authentication auth, Module module) async {
-  //   Map resp =
-  //       await API.rawAPICall(auth: auth, path: "/files/parentID/${module.id}");
-  //   return (new SubdirectoryResponse.fromJson(resp)).data;
-  // }
+  static Future<List<Directory>> getModuleDirectories(
+      Authentication auth, Module module) async {
+    Map resp =
+        await API.rawAPICall(auth: auth, path: "/files/?ParentID=${module.id}");
+    return (new SubdirectoryResponse.fromJson(resp)).data;
+  }
 
-  // static Future<List<Directory>> getSubdirectories(
-  //     Authentication auth, Directory dir) async {
-  //   Map resp =
-  //       await API.rawAPICall(auth: auth, path: "/files/parentID/${dir.id}");
-  //   return (new SubdirectoryResponse.fromJson(resp)).data;
-  // }
+  static Future<List<Directory>> getSubdirectories(
+      Authentication auth, Directory dir) async {
+    Map resp =
+        await API.rawAPICall(auth: auth, path: "/files/?ParentID=${dir.id}");
+    return (new SubdirectoryResponse.fromJson(resp)).data;
+  }
 
-  // static Future<List<BasicFile>> getItemsFromDirectory(
-  //     Authentication auth, Directory dir) async {
-  //   // Get the subdirectories
-  //   var fileResp = FileResponse.fromJson(await API.rawAPICall(
-  //       auth: auth,
-  //       path: "/files/directoryID/${dir.id}/allowUpload/${dir.allowUpload}"));
-  //   var dirResp = SubdirectoryResponse.fromJson(
-  //       await API.rawAPICall(auth: auth, path: "/files/parentID/${dir.id}"));
-  //   List<BasicFile> list = new List();
-  //   if (fileResp != null) list.addAll(fileResp.data);
-  //   if (dirResp != null) list.addAll(dirResp.data);
-  //   return list;
-  // }
+  static Future<List<BasicFile>> getItemsFromDirectory(
+      Authentication auth, Directory dir) async {
+    // Get the subdirectories
+    var fileResp = FileResponse.fromJson(await API.rawAPICall(
+        auth: auth,
+        path:
+            "/files/${dir.id}/file${dir.allowUpload ? '?populate=Creator' : ''}"));
+    var dirResp = SubdirectoryResponse.fromJson(
+        await API.rawAPICall(auth: auth, path: "/files/?ParentID=${dir.id}"));
+    List<BasicFile> list = new List();
+    if (fileResp != null) list.addAll(fileResp.data);
+    if (dirResp != null) list.addAll(dirResp.data);
+    return list;
+  }
 
-  // static Future<String> getDownloadUrl(Authentication auth, File file) async {
-  //   Map resp =
-  //       await API.rawAPICall(auth: auth, path: "/files/download/id/${file.id}");
-  //   return (new DownloadResponse.fromJson(resp)).data;
-  // }
+  static Future<String> getDownloadUrl(Authentication auth, File file) async {
+    Map resp =
+        await API.rawAPICall(auth: auth, path: "/files/file/${file.id}/downloadUrl");
+    return (new DownloadResponse.fromJson(resp)).data;
+  }
 }

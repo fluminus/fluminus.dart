@@ -74,4 +74,9 @@ class Announcement {
     data['lastUpdatedBy'] = this.lastUpdatedBy;
     return data;
   }
+
+  @override
+  String toString() {
+    return 'title: ' + this.title;
+  }
 }

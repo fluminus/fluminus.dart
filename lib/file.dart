@@ -9,6 +9,11 @@ class BasicFile {
   String name;
   bool publish;
   String parentID;
+
+  @override
+  String toString() {
+    return '${this is Directory ? 'Directory' : 'File'}: ' + this.name;
+  }
 }
 
 class Directory extends BasicFile {
