@@ -23,5 +23,11 @@
 
 - Hide files that are necessary and exported inside `luminus_api.dart`
 - Fixed the dependency issue.
-- Added documentation for `luminus_api.dart, which is the entry of this package.
+- Added documentation for `luminus_api.dart`, which is the entry of this package.
 - Implemented automatic management of JWT renewal as long as you stick to the same `Authentication` objected created.
+
+## 0.1.7
+
+- Downgraded dependecy requirement of `meta`
+- Removed unnecessary imports.
+- Made the package description longer so that pub.dev doesn't complain.

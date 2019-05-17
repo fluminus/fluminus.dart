@@ -12,3 +12,6 @@ doc/api/
 
 # Environment variables
 .env
+
+# VSCode related
+.vscode/

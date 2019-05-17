@@ -7,7 +7,6 @@ export 'package:luminus_api/src/profile.dart';
 export 'package:luminus_api/src/file.dart';
 export 'package:luminus_api/src/authorization.dart';
 
-import 'package:dotenv/dotenv.dart' show load, env;
 import 'package:dio/dio.dart';
 
 import 'src/announcement_response.dart';
@@ -21,6 +20,7 @@ import 'package:luminus_api/src/profile.dart';
 import 'package:luminus_api/src/file.dart';
 import 'package:luminus_api/src/authorization.dart';
 
+/// Wrapper class of [luminus_api] package, including the automated authentication flow, data retrieval methods and corresponding data abstraction classes.
 class API {
   // API access infrastructure
 
@@ -49,7 +49,7 @@ class API {
 
   // Module related APIs
 
-  /// Returns a list of [Module] taken by user specified by [auth]
+  /// Returns a list of [Module] taken by user specified by [auth].
   static Future<List<Module>> getModules(Authentication auth) async {
     Map resp = await _rawAPICall(auth: auth, path: '/module');
     var modules = new ModuleResponse.fromJson(resp);
@@ -59,7 +59,7 @@ class API {
   // Announcement related APIs
 
   /// Returns a list of [Announcement] from [module] taken by user specified by [auth].
-  /// [archived] is default as `false`, which limits the returned result to the latest semester,
+  /// [archived] is default as `false`, which limits the returned result to the latest semester.
   static Future<List<Announcement>> getAnnouncements(
       Authentication auth, Module module,
       {bool archived = false}) async {

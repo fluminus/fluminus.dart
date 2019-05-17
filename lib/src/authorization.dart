@@ -54,16 +54,16 @@ class Authentication {
     // TODO: add expiry time check
     if (jwt != null) {
       if (!_isJwtExpired(jwt)) {
-        print('jwt is not expired');
+        // print('jwt is not expired');
       } else if (!_isCookieExpired(jwt)) {
-        print('jwt is expired but renewed from cookie');
+        // print('jwt is expired but renewed from cookie');
         jwt = await _renewJwt(jwt);
       } else {
-        print('request for new jwt');
+        // print('request for new jwt');
         jwt = await _getJwt(this.username, this.password);
       }
     } else {
-      print('request for new jwt');
+      // print('request for new jwt');
       jwt = await _getJwt(this.username, this.password);
     }
     return jwt;
