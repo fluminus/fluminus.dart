@@ -1,5 +1,6 @@
 import 'package:luminus_api/luminus_api.dart';
 import 'package:dotenv/dotenv.dart' show load, env;
+import 'dart:io' as io;
 
 main(List<String> args) async {
   // Remember to load the env var for the main() of your own application!
@@ -23,4 +24,10 @@ main(List<String> args) async {
     }
   }
   print(await API.getProfile(auth));
+  // var res = io.File('./res');
+  // var sink = res.openWrite();
+  // sink.write(await API.getActiveAnnouncements(auth));
+  // await sink.flush();
+  // await sink.close();
+  
 }

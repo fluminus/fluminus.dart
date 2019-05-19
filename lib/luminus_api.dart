@@ -71,6 +71,30 @@ class API {
     return announcements.data;
   }
 
+  /// Get active announcements
+  /// Populate additional information. Accepted entities: creator, lastUpdatedUser, parent
+  static Future<Map> getActiveAnnouncements(Authentication auth,
+      {String sortby,
+      int offset,
+      int limit,
+      String where,
+      String populate,
+      bool titleOnly = true}) async {
+    String query = formatQueryArgument('sortby', sortby) +
+        formatQueryArgument('offset', offset) +
+        formatQueryArgument('limit', limit) +
+        formatQueryArgument('where', where) +
+        formatQueryArgument('populate', populate);
+    String path = '/announcement/Active?titleOnly=${titleOnly}' + query;
+    Map resp = await API._rawAPICall(auth: auth, path: path);
+    // print(resp);
+    return resp;
+  }
+
+  static String formatQueryArgument(String name, dynamic value) {
+    return value == null ? '' : '&${name}=${value}';
+  }
+
   // Personal information related APIs
 
   /// Returns a [Profile] object

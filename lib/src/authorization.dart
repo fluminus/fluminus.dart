@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:convert/convert.dart' as conv;
-import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as parser;
 import 'package:luminus_api/src/http_client.dart';
 import 'package:meta/meta.dart';
@@ -41,6 +40,8 @@ class Authentication {
       'profile email role openid lms.read calendar.read lms.delete lms.write calendar.write gradebook.write offline_access';
   static final String RESPONSE_TYPE = 'id_token token code';
   static final String REDIRECT_URI = 'https://luminus.nus.edu.sg/auth/callback';
+  static final Duration _jwtExpiresIn = const Duration(minutes: 10);
+  static final Duration _refreshTokenExpiresIn = const Duration(hours: 1);
 
   static HTTPClient client = new HTTPClient();
 
@@ -51,7 +52,6 @@ class Authentication {
   Authentication({this.username, this.password});
 
   Future<Authorization> getAuth() async {
-    // TODO: add expiry time check
     if (jwt != null) {
       if (!_isJwtExpired(jwt)) {
         // print('jwt is not expired');
@@ -66,6 +66,11 @@ class Authentication {
       // print('request for new jwt');
       jwt = await _getJwt(this.username, this.password);
     }
+    return jwt;
+  }
+
+  Future<Authorization> forcedRefresh() async {
+    jwt = await _getJwt(this.username, this.password);
     return jwt;
   }
 
@@ -115,14 +120,14 @@ class Authentication {
   static bool _isCookieExpired(Authorization auth) {
     return DateTime.now()
             .difference(auth.idsrvLastUpdated)
-            .compareTo(const Duration(hours: 24)) >
+            .compareTo(_refreshTokenExpiresIn) >
         0;
   }
 
   static bool _isJwtExpired(Authorization auth) {
     return DateTime.now()
             .difference(auth.jwtLastUpdated)
-            .compareTo(const Duration(hours: 1)) >
+            .compareTo(_jwtExpiresIn) >
         0;
   }
 
@@ -131,6 +136,8 @@ class Authentication {
     if (parsed.hasFragment) {
       // TODO: there should be better ways of parsing the fragment...
       var dummy = Uri.parse('https://dummy.com?' + parsed.fragment);
+      print('_handleCallback: ');
+      print(dummy.queryParameters);
       var token = dummy.queryParameters['id_token'];
       return token;
     } else {
@@ -170,16 +177,18 @@ class Authentication {
     return conv.hex.encode(values);
   }
 
+
   static Future<String> _getAuthEndpointUri() async {
     String fullUri = _getFullAuthUri(DISCOVERY_PATH);
-    var response = await http.get(fullUri).catchError((err) {
-      throw Exception(['Failed to get full auth URI']);
-    });
+    var response = await client.get(fullUri);
     if (response.statusCode == 200) {
-      String endpoint = jsonDecode(response.body)['authorization_endpoint'];
+      String endpoint = response.data['authorization_endpoint'];
       return _getAuthEndpointUriWithParams(endpoint);
     } else {
-      throw Exception(['Failed to get full auth URI']);
+      throw Exception([
+        'Failed to get full auth URI with status code: ' +
+            response.statusCode.toString()
+      ]);
     }
   }
 

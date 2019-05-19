@@ -1,10 +1,10 @@
 ## 0.1.1
 
-- Initial version
+- Initial version.
 
 ## 0.1.2
 
-- Update sample code
+- Update sample code.
 
 ## 0.1.3
 
@@ -31,3 +31,11 @@
 - Downgraded dependecy requirement of `meta`
 - Removed unnecessary imports.
 - Made the package description longer so that pub.dev doesn't complain.
+
+## 0.1.8
+
+<!-- - Provide all GET APIs for announcements. -->
+- Maybe LumiNUS internally has a shorter token expiry time, I manually set the `_jwtExpiresIn` as 10 minutes and `_refreshTokenExpiresIn` as an hour. Please send an issue if this doesn't solve your problem.
+- Provide exceptions for API call HTTP exceptions (as specified in LumiNUS API documentation).
+- Add timeouts for HTTP requests.
+- Add methods for enforced re-authentication: `forcedRefresh method in Authorization`.

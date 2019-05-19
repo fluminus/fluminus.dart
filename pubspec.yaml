@@ -1,9 +1,7 @@
 name: luminus_api
 description: A library for Dart developers who's in need of LumiNUS API. 
-  Currently includes implementation of LumiNUS OpenID Connect authentication 
-  flow and automated renewal of access tokens, retrieval and data 
-  abstrcation of announcements, directory and files, modules and profile.
-version: 0.1.7
+  Including automated authentication and data abstractions for API responses.
+version: 0.1.8
 homepage: https://github.com/fluminus/luminus_api
 author: Tan Yuanhong <leotan.yh@gmail.com>
 
