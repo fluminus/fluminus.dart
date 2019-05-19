@@ -77,6 +77,11 @@ class Announcement {
 
   @override
   String toString() {
-    return 'title: ' + this.title;
+    return '[Announcement] title: ' + this.title;
+  }
+
+  @override
+  bool operator ==(o) {
+    return o is Announcement && this.id == o.id;
   }
 }

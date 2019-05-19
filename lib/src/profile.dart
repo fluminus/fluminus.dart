@@ -55,4 +55,9 @@ class Profile {
         '; name: ' +
         this.userNameOriginal;
   }
+
+  @override
+  bool operator ==(o) {
+    return o is Profile && this.id == o.id;
+  }
 }
