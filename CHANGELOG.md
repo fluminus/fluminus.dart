@@ -39,3 +39,7 @@
 - Provide exceptions for API call HTTP exceptions (as specified in LumiNUS API documentation).
 - Add timeouts for HTTP requests.
 - Add methods for enforced re-authentication: `forcedRefresh method in Authorization`.
+
+## 0.1.9
+
+- Overriden `==` for data abstractions to resolve this [issue](https://github.com/fluminus/fluminus_app/issues/27).
