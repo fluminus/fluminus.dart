@@ -114,4 +114,14 @@ class Module {
     data['isCorporateCourse'] = this.isCorporateCourse;
     return data;
   }
+
+  @override
+  bool operator ==(o) {
+    return o is Module && this.id == o.id;
+  }
+
+  @override
+  String toString() {
+    return '[Module] name: ${name}; courseName: ${courseName}';
+  }
 }
