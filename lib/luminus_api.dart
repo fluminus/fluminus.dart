@@ -91,6 +91,66 @@ class API {
     return resp;
   }
 
+  /// Get [Announcement] specified by annID
+  static Future<Announcement> getAnnouncement(Authentication auth, 
+      String annID, {String populate}) async {
+      String query = formatQueryArgument('populate', populate);
+      String path = '/announcement/Active?annID=${annID}' + query;
+      Map resp = await API._rawAPICall(auth: auth, path: path);
+      }
+      return resp;
+  );
+
+  static Future<List<Announcement>> getArchivedAnnouncementsByModule(Authentication auth, 
+      String parentID, 
+      {String sortby, 
+      String offset, 
+      String limit,
+      String where, 
+      String populate, 
+      String titleOnly = true}) async {
+        String query = formatQueryArgument('sortby', sortby) + formatQueryArgument('offset', offset)
+      formatQueryArgument('limit', limit) + formatQueryArgument('where', where)
+      formatQueryArgument('populate', populate);
+      String path = '/announcement/Active?parentID=${parentID}&titleOnly=${titleOnly}' + query;
+       Map resp = await API._rawAPICall(auth: auth, path: path);
+        return resp;
+      }
+  );
+
+  static Future<List<Announcement>> getNonArchivedAnnouncementsByModule(Authentication auth, 
+      String parentID, 
+      {String sortby, 
+      String offset, 
+      String limit,
+      String where, 
+      String populate, 
+      String titleOnly = true}) async {
+      String query = formatQueryArgument('sortby', sortby) + formatQueryArgument('offset', offset)
+      formatQueryArgument('limit', limit) + formatQueryArgument('where', where)
+      formatQueryArgument('populate', populate);
+      String path = '/announcement/Active?parentID=${parentID}&titleOnly=${titleOnly}' + query;
+       Map resp = await API._rawAPICall(auth: auth, path: path);
+        return resp;
+      }
+  );
+
+  static Future<List<Announcement>> getUnreadAnnouncements(Authentication auth, 
+      {String sortby,
+      int offset,
+      int limit,
+      String where,
+      String populate,
+      bool titleOnly = true}) async {
+        String query = formatQueryArgument('sortby', sortby) + formatQueryArgument('offset', offset)
+      formatQueryArgument('limit', limit) + formatQueryArgument('where', where)
+      formatQueryArgument('populate', populate);
+      String path = '/announcement/Active?titleOnly=${titleOnly}' + query;
+       Map resp = await API._rawAPICall(auth: auth, path: path);
+        return resp;
+      }
+  );
+
   static String formatQueryArgument(String name, dynamic value) {
     return value == null ? '' : '&${name}=${value}';
   }
