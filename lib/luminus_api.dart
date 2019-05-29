@@ -23,6 +23,7 @@ import 'package:luminus_api/src/authorization.dart';
 /// Wrapper class of [luminus_api] package, including the automated authentication flow, data retrieval methods and corresponding data abstraction classes.
 class API {
   // API access infrastructure
+  // TODO: Add exceptions for when the status code is not 200. 
 
   static final String OCM_APIM_SUBSCRIPTION_KEY =
       '6963c200ca9440de8fa1eede730d8f7e';
@@ -90,6 +91,65 @@ class API {
     // print(resp);
     return resp;
   }
+
+  /// Get [Announcement] specified by annID
+ static Future<Announcement> getAnnouncement(Authentication auth, 
+   String annID, {String populate}) async {
+    String query = formatQueryArgument('populate', populate);
+    String path = '/announcement/Active?annID=${annID}' + query;
+    Map resp = await API._rawAPICall(auth: auth, path: path);
+    var ann = AnnouncementResponse.fromJson(resp);
+    return ann.data[0];
+ }
+  
+  /// Get list of archived [Announcement] by Module [parentID]
+  static Future<List<Announcement>> getArchivedAnnouncementsByModule(Authentication auth, 
+      String parentID, 
+      {String sortby, 
+      String offset, 
+      String limit,
+      String where, 
+      String populate, 
+      bool titleOnly = true}) async {
+        String query = formatQueryArgument('sortby', sortby) + formatQueryArgument('offset', offset) +
+      formatQueryArgument('limit', limit) + formatQueryArgument('where', where) +
+      formatQueryArgument('populate', populate);
+      String path = '/announcement/Active?parentID=${parentID}&titleOnly=${titleOnly}' + query;
+      Map resp = await API._rawAPICall(auth: auth, path: path);
+      return AnnouncementResponse.fromJson(resp).data;
+      }
+
+  /// Get list of non-archived [Announcement] by Module [parentID]
+  static Future<List<Announcement>> getNonArchivedAnnouncementsByModule(Authentication auth, 
+      String parentID, 
+      {String sortby, 
+      String offset, 
+      String limit,
+      String where, 
+      String populate, 
+      bool titleOnly = true}) async {
+      String query = formatQueryArgument('sortby', sortby) + formatQueryArgument('offset', offset) +
+      formatQueryArgument('limit', limit) + formatQueryArgument('where', where) +
+      formatQueryArgument('populate', populate);
+      String path = '/announcement/Active?parentID=${parentID}&titleOnly=${titleOnly}' + query;
+       Map resp = await API._rawAPICall(auth: auth, path: path);
+      return AnnouncementResponse.fromJson(resp).data;
+      }
+  /// Get list of unread [Announcement] 
+  static Future<List<Announcement>> getUnreadAnnouncements(Authentication auth, 
+      {String sortby,
+      int offset,
+      int limit,
+      String where,
+      String populate,
+      bool titleOnly = true}) async {
+        String query = formatQueryArgument('sortby', sortby) + formatQueryArgument('offset', offset) +
+      formatQueryArgument('limit', limit) + formatQueryArgument('where', where) +
+      formatQueryArgument('populate', populate);
+      String path = '/announcement/Active?titleOnly=${titleOnly}' + query;
+       Map resp = await API._rawAPICall(auth: auth, path: path);
+      return AnnouncementResponse.fromJson(resp).data;
+      }
 
   static String formatQueryArgument(String name, dynamic value) {
     return value == null ? '' : '&${name}=${value}';
