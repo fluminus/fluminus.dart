@@ -43,3 +43,7 @@
 ## 0.1.9
 
 - Overriden `==` for data abstractions to resolve this [issue](https://github.com/fluminus/fluminus_app/issues/27).
+
+## 0.1.10
+
+- Support FutureOr<Authentication> as the provided parameter for LumiNUS API methods, so that you can use `SharedPreferences` or `Flutter Secure Storage` with this package.

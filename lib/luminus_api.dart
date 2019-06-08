@@ -7,6 +7,8 @@ export 'package:luminus_api/src/profile.dart';
 export 'package:luminus_api/src/file.dart';
 export 'package:luminus_api/src/authorization.dart';
 
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 
 import 'src/announcement_response.dart';
@@ -50,8 +52,8 @@ class API {
   // Module related APIs
 
   /// Returns a list of [Module] taken by user specified by [auth].
-  static Future<List<Module>> getModules(Authentication auth) async {
-    Map resp = await _rawAPICall(auth: auth, path: '/module');
+  static Future<List<Module>> getModules(FutureOr<Authentication> auth) async {
+    Map resp = await _rawAPICall(auth: await auth, path: '/module');
     var modules = new ModuleResponse.fromJson(resp);
     return modules.data;
   }
@@ -61,10 +63,10 @@ class API {
   /// Returns a list of [Announcement] from [module] taken by user specified by [auth].
   /// [archived] is default as `false`, which limits the returned result to the latest semester.
   static Future<List<Announcement>> getAnnouncements(
-      Authentication auth, Module module,
+      FutureOr<Authentication> auth, Module module,
       {bool archived = false}) async {
     Map resp = await API._rawAPICall(
-        auth: auth,
+        auth: await auth,
         path:
             "/announcement/${archived ? 'Archived' : 'NonArchived'}/${module.id}?=displayFrom%20ASC");
     var announcements = new AnnouncementResponse.fromJson(resp);
@@ -73,7 +75,7 @@ class API {
 
   /// Get active announcements
   /// Populate additional information. Accepted entities: creator, lastUpdatedUser, parent
-  static Future<Map> getActiveAnnouncements(Authentication auth,
+  static Future<Map> getActiveAnnouncements(FutureOr<Authentication> auth,
       {String sortby,
       int offset,
       int limit,
@@ -86,7 +88,7 @@ class API {
         formatQueryArgument('where', where) +
         formatQueryArgument('populate', populate);
     String path = '/announcement/Active?titleOnly=${titleOnly}' + query;
-    Map resp = await API._rawAPICall(auth: auth, path: path);
+    Map resp = await API._rawAPICall(auth: await auth, path: path);
     // print(resp);
     return resp;
   }
@@ -98,8 +100,8 @@ class API {
   // Personal information related APIs
 
   /// Returns a [Profile] object
-  static Future<Profile> getProfile(Authentication auth) async {
-    Map resp = await API._rawAPICall(auth: auth, path: "/user/profile");
+  static Future<Profile> getProfile(FutureOr<Authentication> auth) async {
+    Map resp = await API._rawAPICall(auth: await auth, path: "/user/profile");
     var profile = new Profile.fromJson(resp);
     return profile;
   }
@@ -110,17 +112,17 @@ class API {
   /// Normally there shouldn't be [File] under a [Module], if such things do happen,
   /// or LumiNUS does allow module coordinators to do so, please post an issue in GitHub.
   static Future<List<Directory>> getModuleDirectories(
-      Authentication auth, Module module) async {
+      FutureOr<Authentication> auth, Module module) async {
     Map resp = await API._rawAPICall(
-        auth: auth, path: "/files/?ParentID=${module.id}");
+        auth: await auth, path: "/files/?ParentID=${module.id}");
     return (new SubdirectoryResponse.fromJson(resp)).data;
   }
 
   /// Returns a list of [Directory] rooted with the given [dir].
   static Future<List<Directory>> getSubdirectories(
-      Authentication auth, Directory dir) async {
-    Map resp =
-        await API._rawAPICall(auth: auth, path: "/files/?ParentID=${dir.id}");
+      FutureOr<Authentication> auth, Directory dir) async {
+    Map resp = await API._rawAPICall(
+        auth: await auth, path: "/files/?ParentID=${dir.id}");
     return (new SubdirectoryResponse.fromJson(resp)).data;
   }
 
@@ -129,14 +131,14 @@ class API {
   /// are subclasses of [BasicFile], by calling this function we can display
   /// both files and subdirectories under [dir].
   static Future<List<BasicFile>> getItemsFromDirectory(
-      Authentication auth, Directory dir) async {
+      FutureOr<Authentication> auth, Directory dir) async {
     // Get the subdirectories
     var fileResp = FileResponse.fromJson(await API._rawAPICall(
-        auth: auth,
+        auth: await auth,
         path:
             "/files/${dir.id}/file${dir.allowUpload ? '?populate=Creator' : ''}"));
     var dirResp = SubdirectoryResponse.fromJson(
-        await API._rawAPICall(auth: auth, path: "/files/?ParentID=${dir.id}"));
+        await API._rawAPICall(auth: await auth, path: "/files/?ParentID=${dir.id}"));
     List<BasicFile> list = new List();
     if (fileResp != null) list.addAll(fileResp.data);
     if (dirResp != null) list.addAll(dirResp.data);
@@ -144,9 +146,10 @@ class API {
   }
 
   /// Return the download url of a given [file], note that this url can only be used once.
-  static Future<String> getDownloadUrl(Authentication auth, File file) async {
+  static Future<String> getDownloadUrl(
+      FutureOr<Authentication> auth, File file) async {
     Map resp = await API._rawAPICall(
-        auth: auth, path: "/files/file/${file.id}/downloadUrl");
+        auth: await auth, path: "/files/file/${file.id}/downloadUrl");
     return (new DownloadResponse.fromJson(resp)).data;
   }
 }

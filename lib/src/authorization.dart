@@ -136,8 +136,8 @@ class Authentication {
     if (parsed.hasFragment) {
       // TODO: there should be better ways of parsing the fragment...
       var dummy = Uri.parse('https://dummy.com?' + parsed.fragment);
-      print('_handleCallback: ');
-      print(dummy.queryParameters);
+      // print('_handleCallback: ');
+      // print(dummy.queryParameters);
       var token = dummy.queryParameters['id_token'];
       return token;
     } else {
