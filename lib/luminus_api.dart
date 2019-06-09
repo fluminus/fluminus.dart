@@ -6,6 +6,7 @@ export 'package:luminus_api/src/announcement.dart';
 export 'package:luminus_api/src/profile.dart';
 export 'package:luminus_api/src/file.dart';
 export 'package:luminus_api/src/authorization.dart';
+export 'package:luminus_api/src/exception.dart';
 
 import 'dart:async';
 
@@ -137,8 +138,8 @@ class API {
         auth: await auth,
         path:
             "/files/${dir.id}/file${dir.allowUpload ? '?populate=Creator' : ''}"));
-    var dirResp = SubdirectoryResponse.fromJson(
-        await API._rawAPICall(auth: await auth, path: "/files/?ParentID=${dir.id}"));
+    var dirResp = SubdirectoryResponse.fromJson(await API._rawAPICall(
+        auth: await auth, path: "/files/?ParentID=${dir.id}"));
     List<BasicFile> list = new List();
     if (fileResp != null) list.addAll(fileResp.data);
     if (dirResp != null) list.addAll(dirResp.data);

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:convert/convert.dart' as conv;
 import 'package:html/parser.dart' as parser;
+import 'package:luminus_api/src/exception.dart';
 import 'package:luminus_api/src/http_client.dart';
 import 'package:meta/meta.dart';
 
@@ -43,13 +44,13 @@ class Authentication {
   static final Duration _jwtExpiresIn = const Duration(minutes: 10);
   static final Duration _refreshTokenExpiresIn = const Duration(hours: 1);
 
-  static HTTPClient client = new HTTPClient();
+  final HTTPClient client;
 
   Authorization jwt;
 
   String username;
   String password;
-  Authentication({this.username, this.password});
+  Authentication({this.username, this.password}) : client = new HTTPClient();
 
   Future<Authorization> getAuth() async {
     if (jwt != null) {
@@ -74,37 +75,46 @@ class Authentication {
     return jwt;
   }
 
-  static Future<Authorization> _getJwt(String username, String password) async {
-    var info = await _getAuthLoginInfo();
-    var query = {
-      info['xsrf_name']: info['xsrf_value'],
-      'username': username,
-      'password': password
-    };
-    var t1 = await client.post(info['fullLoginUri'], query);
-    var loc1 = t1.headers.value('location');
-    var t2 = await client.get(loc1);
-    // For the use of 'idsrv' field later, don't know how to avoid a second request, will figure out later.
-    List<Cookie> cookies = List();
-    cookies = client.cm.cookieJar.loadForRequest(Uri.parse(loc1));
-    var location = t2.headers.value('location');
-    String idsrv;
-    for (var c in cookies) {
-      if (c.name == 'idsrv') {
-        idsrv = c.value;
-        break;
+  Future<Authorization> _getJwt(String username, String password) async {
+    try {
+      var info = await _getAuthLoginInfo();
+      var query = {
+        info['xsrf_name']: info['xsrf_value'],
+        'username': username,
+        'password': password
+      };
+      var t1 = await client.post(info['fullLoginUri'], query);
+      var loc1 = t1.headers.value('location');
+      var t2 = await client.get(loc1);
+      List<Cookie> cookies = List();
+      cookies = client.cm.cookieJar.loadForRequest(Uri.parse(loc1));
+      var location = t2.headers.value('location');
+      String idsrv;
+      for (var c in cookies) {
+        if (c.name == 'idsrv') {
+          idsrv = c.value;
+          break;
+        }
+      }
+      if (idsrv == null) throw Exception(['idsrv field is empty']);
+      // TODO: time information can be extracted from headers, however the server doesn't respond a standard date...
+      // print(t2.headers.value(HttpHeaders.dateHeader));
+      // DateTime.parse()
+      return Authorization(
+          idsrv: idsrv,
+          jwt: _handleCallback(location),
+          idsrvLastUpdated: DateTime.now(),
+          jwtLastUpdated: DateTime.now());
+    } catch (e) {
+      if(e is RestartAuthException) {
+        rethrow;
+      } else {
+        throw AuthorizationException(e.toString());
       }
     }
-    if (idsrv == null) throw Exception(['idsrv field is empty']);
-    // TODO: time information can be extracted from headers
-    return Authorization(
-        idsrv: idsrv,
-        jwt: _handleCallback(location),
-        idsrvLastUpdated: DateTime.now(),
-        jwtLastUpdated: DateTime.now());
   }
 
-  static Future<Authorization> _renewJwt(Authorization auth) async {
+  Future<Authorization> _renewJwt(Authorization auth) async {
     String authEndpointUri = await _getAuthEndpointUri();
     var authResponse = await client
         .get(authEndpointUri, cookies: [Cookie('idsrv', auth.idsrv)]);
@@ -145,13 +155,16 @@ class Authentication {
     }
   }
 
-  static Future<Map<String, String>> _getAuthLoginInfo() async {
+  Future<Map<String, String>> _getAuthLoginInfo() async {
     try {
       Map<String, String> map = new Map();
       String authUri = await _getAuthEndpointUri();
       var resp = await client.get(authUri);
       var headers = resp.headers;
       var location = headers.value('location');
+      if (Uri.parse(location).queryParameters.isEmpty) {
+        throw RestartAuthException();
+      }
       var body = await client.get(location);
       var document = parser.parse(body.data);
       var modelJson = document
@@ -165,7 +178,11 @@ class Authentication {
       map['xsrf_value'] = parsed['antiForgery']['value'];
       return map;
     } catch (e) {
-      throw Exception(['Failed to get auth login info: ' + e.toString()]);
+      if (e is AuthorizationException) {
+        rethrow;
+      } else {
+        throw Exception(['Failed to get auth login info: ' + e.toString()]);
+      }
     }
   }
 
@@ -177,8 +194,7 @@ class Authentication {
     return conv.hex.encode(values);
   }
 
-
-  static Future<String> _getAuthEndpointUri() async {
+  Future<String> _getAuthEndpointUri() async {
     String fullUri = _getFullAuthUri(DISCOVERY_PATH);
     var response = await client.get(fullUri);
     if (response.statusCode == 200) {
@@ -228,8 +244,8 @@ class Authentication {
 }
 
 // Testing functions
-void testRenewJwt(Authentication auth) async {
-  Authorization autho = await auth.getAuth();
-  await new Future.delayed(const Duration(seconds: 5));
-  print(await Authentication._renewJwt(autho));
-}
+// void testRenewJwt(Authentication auth) async {
+//   Authorization autho = await auth.getAuth();
+//   await new Future.delayed(const Duration(seconds: 5));
+//   print(await Authentication._renewJwt(autho));
+// }

@@ -1,5 +1,5 @@
 class TimeoutException implements Exception {
-  String cause;
+  final String cause;
   TimeoutException(this.cause);
 }
 
@@ -9,6 +9,20 @@ class HttpException implements Exception {
   HttpException(this.statusCode, this.cause);
   String toString() =>
       "HttpException: statusCode ${statusCode}; cause: ${cause}";
+}
+
+class AuthorizationException implements Exception {
+  final String cause;
+  AuthorizationException(this.cause);
+  @override
+  String toString() => "AuthorizationException: $cause";
+}
+
+class RestartAuthException extends AuthorizationException {
+  /// Because you have a successful login last time, 
+  /// you need to restart the session to make LumiNUS 
+  /// give up recognizing you as the previous user.
+  RestartAuthException() : super("Needs restarting the app");
 }
 
 class BadRequestException extends HttpException {
