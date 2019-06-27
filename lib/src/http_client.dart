@@ -36,19 +36,30 @@ class HTTPClient {
   Future<Response> get(String url,
       {Map<String, String> headers = const {},
       Iterable<Cookie> cookies = const []}) async {
-    Response resp = await dio.get(url,
-        options: Options(
-            connectTimeout: _connectTimeOut,
-            receiveTimeout: _receiveTimeOut,
-            sendTimeout: _sendTimeOut,
-            headers: headers,
-            cookies: cookies,
-            followRedirects: false,
-            validateStatus: (status) {
-              // 500 would be caught later,
-              // this is for the sake of exception consistency.
-              return status <= 500;
-            }));
+    Response resp;
+    try {
+      resp = await dio.get(url,
+          options: Options(
+              connectTimeout: _connectTimeOut,
+              receiveTimeout: _receiveTimeOut,
+              sendTimeout: _sendTimeOut,
+              headers: headers,
+              cookies: cookies,
+              followRedirects: false,
+              validateStatus: (status) {
+                // 500 would be caught later,
+                // this is for the sake of exception consistency.
+                return status <= 500;
+              }));
+    } catch (e) {
+      if (e.toString().startsWith(
+          "DioError [DioErrorType.DEFAULT]: NoSuchMethodError: The method 'startsWith' was called on null.")) {
+        throw WrongCredentialsException();
+      } else {
+        rethrow;
+      }
+    }
+
     _catchHttpExceptions(resp, 'HTTPClient.get');
     return resp;
   }

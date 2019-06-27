@@ -106,7 +106,7 @@ class Authentication {
           idsrvLastUpdated: DateTime.now(),
           jwtLastUpdated: DateTime.now());
     } catch (e) {
-      if(e is RestartAuthException) {
+      if (e is AuthorizationException) {
         rethrow;
       } else {
         throw AuthorizationException(e.toString());

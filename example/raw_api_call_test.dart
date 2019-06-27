@@ -11,7 +11,7 @@ main(List<String> args) async {
 
   // await Future.delayed(const Duration(seconds: 5));
 
-  var wrongAuth = Authentication(username: 'e0261956', password: 'hahahah');
+  var wrongAuth = Authentication(username: 'e0261956', password: 'asdasd');
   try {
     print(await wrongAuth.getAuth());
   } catch (e) {
