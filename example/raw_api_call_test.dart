@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:luminus_api/luminus_api.dart';
 import 'package:dotenv/dotenv.dart' show load, env;
 

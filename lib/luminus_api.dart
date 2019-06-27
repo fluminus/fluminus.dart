@@ -7,10 +7,13 @@ export 'package:luminus_api/src/profile.dart';
 export 'package:luminus_api/src/file.dart';
 export 'package:luminus_api/src/authorization.dart';
 export 'package:luminus_api/src/exception.dart';
+export 'package:luminus_api/src/notification.dart';
 
 import 'dart:async';
 
 import 'package:dio/dio.dart';
+import 'package:luminus_api/src/notification.dart';
+import 'package:luminus_api/src/notification_response.dart';
 
 import 'src/announcement_response.dart';
 import 'src/download_response.dart';
@@ -39,12 +42,11 @@ class API {
     headers['Authorization'] = 'Bearer ${auth.jwt}';
     headers['Ocp-Apim-Subscription-Key'] = OCM_APIM_SUBSCRIPTION_KEY;
     var uri = API_BASE_URL + path;
-    // print('apiGet: '+uri);
     var resp = await dio.get(uri, options: Options(headers: headers));
     return resp.data;
   }
 
-  static Future<Map> _rawAPICall(
+  static Future<Map> rawAPICall(
       {Authentication auth, String path, bool isTest = false}) async {
     Map parsed = await _apiGet(await auth.getAuth(), path);
     return parsed;
@@ -54,7 +56,7 @@ class API {
 
   /// Returns a list of [Module] taken by user specified by [auth].
   static Future<List<Module>> getModules(FutureOr<Authentication> auth) async {
-    Map resp = await _rawAPICall(auth: await auth, path: '/module');
+    Map resp = await rawAPICall(auth: await auth, path: '/module');
     var modules = new ModuleResponse.fromJson(resp);
     return modules.data;
   }
@@ -66,7 +68,7 @@ class API {
   static Future<List<Announcement>> getAnnouncements(
       FutureOr<Authentication> auth, Module module,
       {bool archived = false}) async {
-    Map resp = await API._rawAPICall(
+    Map resp = await API.rawAPICall(
         auth: await auth,
         path:
             "/announcement/${archived ? 'Archived' : 'NonArchived'}/${module.id}?=displayFrom%20ASC");
@@ -83,26 +85,43 @@ class API {
       String where,
       String populate,
       bool titleOnly = true}) async {
-    String query = formatQueryArgument('sortby', sortby) +
-        formatQueryArgument('offset', offset) +
-        formatQueryArgument('limit', limit) +
-        formatQueryArgument('where', where) +
-        formatQueryArgument('populate', populate);
-    String path = '/announcement/Active?titleOnly=${titleOnly}' + query;
-    Map resp = await API._rawAPICall(auth: await auth, path: path);
-    // print(resp);
+    String query = _formatQueryArgument({
+      'sortby': sortby,
+      'offset': offset,
+      'limit': limit,
+      'where': where,
+      'populate': populate,
+      'titleOnly': titleOnly
+    });
+    String path = '/announcement/Active' + query;
+    Map resp = await API.rawAPICall(auth: await auth, path: path);
     return resp;
   }
 
-  static String formatQueryArgument(String name, dynamic value) {
-    return value == null ? '' : '&${name}=${value}';
+  // static String formatQueryArgument(String name, dynamic value) =>
+  //     value == null ? '' : '&${name}=${value}';
+
+  static String _formatQueryArgument(Map<String, dynamic> query) {
+    bool hasValue = false;
+    String res = '';
+    query.forEach((String name, dynamic value) {
+      if (value != null) {
+        if (!hasValue) {
+          hasValue = true;
+          res += '?$name=$value';
+        } else {
+          res += '&$name=$value';
+        }
+      }
+    });
+    return res;
   }
 
   // Personal information related APIs
 
   /// Returns a [Profile] object
   static Future<Profile> getProfile(FutureOr<Authentication> auth) async {
-    Map resp = await API._rawAPICall(auth: await auth, path: "/user/profile");
+    Map resp = await API.rawAPICall(auth: await auth, path: "/user/profile");
     var profile = new Profile.fromJson(resp);
     return profile;
   }
@@ -114,7 +133,7 @@ class API {
   /// or LumiNUS does allow module coordinators to do so, please post an issue in GitHub.
   static Future<List<Directory>> getModuleDirectories(
       FutureOr<Authentication> auth, Module module) async {
-    Map resp = await API._rawAPICall(
+    Map resp = await API.rawAPICall(
         auth: await auth, path: "/files/?ParentID=${module.id}");
     return (new SubdirectoryResponse.fromJson(resp)).data;
   }
@@ -122,7 +141,7 @@ class API {
   /// Returns a list of [Directory] rooted with the given [dir].
   static Future<List<Directory>> getSubdirectories(
       FutureOr<Authentication> auth, Directory dir) async {
-    Map resp = await API._rawAPICall(
+    Map resp = await API.rawAPICall(
         auth: await auth, path: "/files/?ParentID=${dir.id}");
     return (new SubdirectoryResponse.fromJson(resp)).data;
   }
@@ -134,11 +153,11 @@ class API {
   static Future<List<BasicFile>> getItemsFromDirectory(
       FutureOr<Authentication> auth, Directory dir) async {
     // Get the subdirectories
-    var fileResp = FileResponse.fromJson(await API._rawAPICall(
+    var fileResp = FileResponse.fromJson(await API.rawAPICall(
         auth: await auth,
         path:
             "/files/${dir.id}/file${dir.allowUpload ? '?populate=Creator' : ''}"));
-    var dirResp = SubdirectoryResponse.fromJson(await API._rawAPICall(
+    var dirResp = SubdirectoryResponse.fromJson(await API.rawAPICall(
         auth: await auth, path: "/files/?ParentID=${dir.id}"));
     List<BasicFile> list = new List();
     if (fileResp != null) list.addAll(fileResp.data);
@@ -149,9 +168,30 @@ class API {
   /// Return the download url of a given [file], note that this url can only be used once.
   static Future<String> getDownloadUrl(
       FutureOr<Authentication> auth, File file) async {
-    Map resp = await API._rawAPICall(
+    Map resp = await API.rawAPICall(
         auth: await auth, path: "/files/file/${file.id}/downloadUrl");
     return (new DownloadResponse.fromJson(resp)).data;
+  }
+
+  /// Notification API
+
+  static Future<List<Notification>> getNotifications(
+      FutureOr<Authentication> auth,
+      {String sortby,
+      int offset,
+      int limit,
+      String where,
+      String populate}) async {
+    String query = _formatQueryArgument({
+      'sortby': sortby,
+      'offset': offset,
+      'limit': limit,
+      'where': where,
+      'populate': populate,
+    });
+    String path = '/notification' + query;
+    Map resp = await API.rawAPICall(auth: await auth, path: path);
+    return NotificationResponse.fromJson(resp).data;
   }
 }
 
