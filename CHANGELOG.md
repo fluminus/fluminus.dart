@@ -51,6 +51,7 @@
 - Added `RestartAuthException` to deal with weird LumiNUS behavior
 - Overrode `hashCode` for `File` class
 
-## 0.1.16
+## 0.1.16-0.1.17
 
 - Support for notifictaions
+- Provide `WrongCredentialsException`
