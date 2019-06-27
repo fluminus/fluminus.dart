@@ -171,4 +171,7 @@ class File extends BasicFile {
     data['lastUpdatedBy'] = this.lastUpdatedBy;
     return data;
   }
+
+  bool operator ==(o) => o is File && o.id == id;
+  int get hashCode => id.hashCode;
 }
