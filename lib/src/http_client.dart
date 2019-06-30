@@ -29,9 +29,9 @@ class HTTPClient {
     }
   }
 
-  int _connectTimeOut = 500;
-  int _receiveTimeOut = 1000;
-  int _sendTimeOut = 500;
+  int _connectTimeOut = 5000;
+  int _receiveTimeOut = 10000;
+  int _sendTimeOut = 5000;
 
   Future<Response> get(String url,
       {Map<String, String> headers = const {},
