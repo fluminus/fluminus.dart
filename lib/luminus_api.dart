@@ -58,7 +58,7 @@ class API {
   /// Returns a list of [Module] taken by user specified by [auth].
   static Future<List<Module>> getModules(FutureOr<Authentication> auth) async {
     Map resp = await rawAPICall(auth: await auth, path: '/module');
-    var modules = new ModuleResponse.fromJson(resp);
+    var modules = ModuleResponse.fromJson(resp);
     return modules.data;
   }
 
@@ -73,7 +73,7 @@ class API {
         auth: await auth,
         path:
             "/announcement/${archived ? 'Archived' : 'NonArchived'}/${module.id}?=displayFrom%20ASC");
-    var announcements = new AnnouncementResponse.fromJson(resp);
+    var announcements = AnnouncementResponse.fromJson(resp);
     return announcements.data;
   }
 
@@ -117,7 +117,7 @@ class API {
   });
   String path = '/announcement/Unread?titleOnly=${titleOnly}' + query;
   Map resp = await API.rawAPICall(auth: auth, path: path);
-  var announcements = new AnnouncementResponse.fromJson(resp);
+  var announcements = AnnouncementResponse.fromJson(resp);
   return announcements.data;
   }
 
@@ -139,7 +139,7 @@ class API {
      });
      String path = '/announcement/Active/${parentID}?titleOnly=${titleOnly}' + query;
      Map resp = await API.rawAPICall(auth: auth, path: path);
-     var announcements = new AnnouncementResponse.fromJson(resp);
+     var announcements = AnnouncementResponse.fromJson(resp);
      return announcements.data;
   }
 
@@ -161,7 +161,7 @@ class API {
   });
     String path = '/announcement/Archived/${parentID}?titleOnly=${titleOnly}' + query;
     Map resp = await API.rawAPICall(auth: auth, path: path);
-    var announcements = new AnnouncementResponse.fromJson(resp);
+    var announcements = AnnouncementResponse.fromJson(resp);
     return announcements.data;
   }
 
@@ -183,7 +183,7 @@ class API {
   });
     String path = '/announcement/NonArchived/${parentID}?titleOnly=${titleOnly}' + query;
     Map resp = await API.rawAPICall(auth: auth, path: path);
-    var announcements = new AnnouncementResponse.fromJson(resp);
+    var announcements = AnnouncementResponse.fromJson(resp);
     return announcements.data;  
   }
 
@@ -211,7 +211,7 @@ class API {
   /// Returns a [Profile] object
   static Future<Profile> getProfile(FutureOr<Authentication> auth) async {
     Map resp = await API.rawAPICall(auth: await auth, path: "/user/profile");
-    var profile = new Profile.fromJson(resp);
+    var profile = Profile.fromJson(resp);
     return profile;
   }
 
@@ -224,7 +224,7 @@ class API {
       FutureOr<Authentication> auth, Module module) async {
     Map resp = await API.rawAPICall(
         auth: await auth, path: "/files/?ParentID=${module.id}");
-    return (new SubdirectoryResponse.fromJson(resp)).data;
+    return (SubdirectoryResponse.fromJson(resp)).data;
   }
 
   /// Returns a list of [Directory] rooted with the given [dir].
@@ -232,7 +232,7 @@ class API {
       FutureOr<Authentication> auth, Directory dir) async {
     Map resp = await API.rawAPICall(
         auth: await auth, path: "/files/?ParentID=${dir.id}");
-    return (new SubdirectoryResponse.fromJson(resp)).data;
+    return (SubdirectoryResponse.fromJson(resp)).data;
   }
 
   /// Returns a list of [BasicFile] rooted with the given [dir].
@@ -248,7 +248,7 @@ class API {
             "/files/${dir.id}/file${dir.allowUpload ? '?populate=Creator' : ''}"));
     var dirResp = SubdirectoryResponse.fromJson(await API.rawAPICall(
         auth: await auth, path: "/files/?ParentID=${dir.id}"));
-    List<BasicFile> list = new List();
+    List<BasicFile> list = List();
     if (fileResp != null) list.addAll(fileResp.data);
     if (dirResp != null) list.addAll(dirResp.data);
     return list;
@@ -259,7 +259,7 @@ class API {
       FutureOr<Authentication> auth, File file) async {
     Map resp = await API.rawAPICall(
         auth: await auth, path: "/files/file/${file.id}/downloadUrl");
-    return (new DownloadResponse.fromJson(resp)).data;
+    return ( DownloadResponse.fromJson(resp)).data;
   }
 
   /// Notification API
