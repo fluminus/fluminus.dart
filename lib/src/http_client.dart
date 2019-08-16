@@ -53,10 +53,12 @@ class HTTPClient {
     return resp;
   }
 
-  Future<Response> post(String url, dynamic payload) async {
+  Future<Response> post(String url, dynamic payload,
+      {Map<String, dynamic> headers}) async {
     Response resp = await dio.post(url,
         data: payload,
         options: Options(
+            headers: headers,
             connectTimeout: _connectTimeOut,
             receiveTimeout: _receiveTimeOut,
             sendTimeout: _sendTimeOut,

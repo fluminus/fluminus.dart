@@ -5,11 +5,8 @@ import 'package:dotenv/dotenv.dart' show load, env;
 main(List<String> args) async {
   // Remember to load the env var for the main() of your own application!
   load();
-  Future<Authentication> auth = Future.delayed(
-      Duration(seconds: 3),
-      () => Authentication(
-          password: env['LUMINUS_PASSWORD'],
-          username: env['LUMINUS_USERNAME']));
+  var auth = Authentication(
+      password: env['LUMINUS_PASSWORD'], username: env['LUMINUS_USERNAME']);
   var modules = await API.getModules(auth);
   for (Module mod in modules) {
     print(mod.courseName);
@@ -27,9 +24,4 @@ main(List<String> args) async {
     }
   }
   print(await API.getProfile(auth));
-  // var res = io.File('./res');
-  // var sink = res.openWrite();
-  // sink.write(await API.getActiveAnnouncements(auth));
-  // await sink.flush();
-  // await sink.close();
 }
