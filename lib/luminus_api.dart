@@ -12,7 +12,7 @@ export 'package:luminus_api/src/notification.dart';
 import 'dart:async';
 
 import 'package:dio/dio.dart';
-import 'package:dotenv/dotenv.dart';
+// import 'package:dotenv/dotenv.dart';
 import 'package:luminus_api/src/notification.dart';
 import 'package:luminus_api/src/notification_response.dart';
 
@@ -284,10 +284,10 @@ class API {
   }
 }
 
-main(List<String> args) async {
-  load();
-  var auth = Authentication(
-          password: env['LUMINUS_PASSWORD'], username: env['LUMINUS_USERNAME']);
+// main(List<String> args) async {
+//   load();
+//   var auth = Authentication(
+//           password: env['LUMINUS_PASSWORD'], username: env['LUMINUS_USERNAME']);
   // print(await API.getUnreadAnnouncements(auth, limit: 1));
   // print(await API.getActiveAnnouncementsByModule(auth, 'e6cc862f-f579-4414-9139-b5a88784c73c'));
   // print(await API.getArchivedAnnouncementsByModule(auth, 'e6cc862f-f579-4414-9139-b5a88784c73c'));
@@ -308,4 +308,4 @@ main(List<String> args) async {
     } catch (e) {
       print(e);
     } */
-}
+// }
