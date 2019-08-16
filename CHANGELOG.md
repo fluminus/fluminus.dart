@@ -51,6 +51,12 @@
 - Added `RestartAuthException` to deal with weird LumiNUS behavior
 - Overrode `hashCode` for `File` class
 
-## 0.1.16
+## 0.1.16-0.1.18
 
 - Support for notifictaions
+- Provide `WrongCredentialsException`
+- 10x timeout threshold
+
+## 0.2.0
+
+- Support for new ADFS auth channel

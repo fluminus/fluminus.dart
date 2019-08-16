@@ -19,10 +19,16 @@ class AuthorizationException implements Exception {
 }
 
 class RestartAuthException extends AuthorizationException {
-  /// Because you have a successful login last time, 
-  /// you need to restart the session to make LumiNUS 
+  /// Because you have a successful login last time,
+  /// you need to restart the session to make LumiNUS
   /// give up recognizing you as the previous user.
   RestartAuthException() : super("Needs restarting the app");
+}
+
+class WrongCredentialsException extends AuthorizationException {
+  /// This is most likely a [NoSuchMethodError] with a missing [startsWith]
+  /// method.
+  WrongCredentialsException() : super("Please provide correct credentials");
 }
 
 class BadRequestException extends HttpException {

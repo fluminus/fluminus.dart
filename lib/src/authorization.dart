@@ -90,7 +90,6 @@ class Authentication {
   }
 
   Future<Authorization> _vafsJwt(String username, String password) async {
-    var vafsClient = HTTPClient();
     var query = {
       'response_type': 'code',
       'client_id': VAFS_CLIENT_ID,
@@ -107,9 +106,9 @@ class Authentication {
         host: 'vafs.nus.edu.sg',
         path: '/adfs/oauth2/authorize',
         queryParameters: query);
-    var t1 = await vafsClient.post(uri.toString(), body);
+    var t1 = await client.post(uri.toString(), body);
     var loc1 = t1.headers.value('location');
-    var t2 = await vafsClient.get(loc1);
+    var t2 = await client.get(loc1);
     var code = Uri.parse(t2.headers.value('location')).queryParameters['code'];
     var adfsBody = {
       'grant_type': 'authorization_code',
@@ -118,7 +117,7 @@ class Authentication {
       'redirect_uri': REDIRECT_URI,
       'code': code
     };
-    var t3 = await vafsClient.post(
+    var t3 = await client.post(
         API.API_BASE_URL + '/login/adfstoken', adfsBody,
         headers: {'Ocp-Apim-Subscription-Key': OCM_APIM_SUBSCRIPTION_KEY});
     return Authorization(
