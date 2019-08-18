@@ -79,7 +79,8 @@ class API {
 
   /// Get active announcements
   /// Populate additional information. Accepted entities: creator, lastUpdatedUser, parent
-  static Future<Map> getActiveAnnouncements(FutureOr<Authentication> auth,
+  static Future<List<Announcement>> ActiveAnnouncements(
+      FutureOr<Authentication> auth,
       {String sortby,
       int offset,
       int limit,
@@ -96,95 +97,102 @@ class API {
     });
     String path = '/announcement/Active' + query;
     Map resp = await API.rawAPICall(auth: await auth, path: path);
-    return resp;
+    var announcements = new AnnouncementResponse.fromJson(resp);
+    return announcements.data;
   }
 
   /// Get unread announcements
-  static Future<List<Announcement>> getUnreadAnnouncements(Authentication auth, 
-    {String sortby, 
-    int offset, 
-    int limit, 
-    String where, 
-    String populate,
-    bool titleOnly = true}) async {
-  String query = _formatQueryArgument({
-    'sortby': sortby,
-      'offset': offset,
-      'limit': limit,
-      'where': where,
-      'populate': populate,
-      'titleOnly': titleOnly
-  });
-  String path = '/announcement/Unread?titleOnly=${titleOnly}' + query;
-  Map resp = await API.rawAPICall(auth: auth, path: path);
-  var announcements = new AnnouncementResponse.fromJson(resp);
-  return announcements.data;
-  }
-
-  /// Get active announcements by Module
-  static Future<List<Announcement>> getActiveAnnouncementsByModule(Authentication auth, String parentID, 
-    {String sortby, 
+  static Future<List<Announcement>> getUnreadAnnouncements(Authentication auth,
+      {String sortby,
       int offset,
       int limit,
       String where,
       String populate,
       bool titleOnly = true}) async {
     String query = _formatQueryArgument({
-    'sortby': sortby,
+      'sortby': sortby,
       'offset': offset,
       'limit': limit,
       'where': where,
       'populate': populate,
-      'titleOnly': titleOnly    
-     });
-     String path = '/announcement/Active/${parentID}?titleOnly=${titleOnly}' + query;
-     Map resp = await API.rawAPICall(auth: auth, path: path);
-     var announcements = new AnnouncementResponse.fromJson(resp);
-     return announcements.data;
+      'titleOnly': titleOnly
+    });
+    String path = '/announcement/Unread?titleOnly=${titleOnly}' + query;
+    Map resp = await API.rawAPICall(auth: auth, path: path);
+    var announcements = new AnnouncementResponse.fromJson(resp);
+    return announcements.data;
+  }
+
+  /// Get active announcements by Module
+  static Future<List<Announcement>> getActiveAnnouncementsByModule(
+      Authentication auth, String parentID,
+      {String sortby,
+      int offset,
+      int limit,
+      String where,
+      String populate,
+      bool titleOnly = true}) async {
+    String query = _formatQueryArgument({
+      'sortby': sortby,
+      'offset': offset,
+      'limit': limit,
+      'where': where,
+      'populate': populate,
+      'titleOnly': titleOnly
+    });
+    String path =
+        '/announcement/Active/${parentID}?titleOnly=${titleOnly}' + query;
+    Map resp = await API.rawAPICall(auth: auth, path: path);
+    var announcements = new AnnouncementResponse.fromJson(resp);
+    return announcements.data;
   }
 
   /// Get archived announcements by Module
-  static Future<List<Announcement>> getArchivedAnnouncementsByModule(Authentication auth, String parentID, 
-    {String sortby,
-    int offset,
-    int limit,
-    String where,
-    String populate,
-    bool titleOnly = true}) async {
-  String query = _formatQueryArgument({
-    'sortby': sortby,
+  static Future<List<Announcement>> getArchivedAnnouncementsByModule(
+      Authentication auth, String parentID,
+      {String sortby,
+      int offset,
+      int limit,
+      String where,
+      String populate,
+      bool titleOnly = true}) async {
+    String query = _formatQueryArgument({
+      'sortby': sortby,
       'offset': offset,
       'limit': limit,
       'where': where,
       'populate': populate,
-      'titleOnly': titleOnly 
-  });
-    String path = '/announcement/Archived/${parentID}?titleOnly=${titleOnly}' + query;
+      'titleOnly': titleOnly
+    });
+    String path =
+        '/announcement/Archived/${parentID}?titleOnly=${titleOnly}' + query;
     Map resp = await API.rawAPICall(auth: auth, path: path);
     var announcements = new AnnouncementResponse.fromJson(resp);
     return announcements.data;
   }
 
   /// Get non-archived announcementd by Module
-  static Future<List<Announcement>> getNonArchivedAnnouncementsByModule(Authentication auth, String parentID, 
-    {String sortby,
-    int offset,
-    int limit, 
-    String where,
-    String populate,
-    bool titleOnly = true}) async {
-  String query = _formatQueryArgument({
-    'sortby': sortby,
-    'offset' : offset,
-    'limit': limit,
-    'where' : where,
-    'populate' : populate,
-    'titleOnly' : titleOnly
-  });
-    String path = '/announcement/NonArchived/${parentID}?titleOnly=${titleOnly}' + query;
+  static Future<List<Announcement>> getNonArchivedAnnouncementsByModule(
+      Authentication auth, String parentID,
+      {String sortby,
+      int offset,
+      int limit,
+      String where,
+      String populate,
+      bool titleOnly = true}) async {
+    String query = _formatQueryArgument({
+      'sortby': sortby,
+      'offset': offset,
+      'limit': limit,
+      'where': where,
+      'populate': populate,
+      'titleOnly': titleOnly
+    });
+    String path =
+        '/announcement/NonArchived/${parentID}?titleOnly=${titleOnly}' + query;
     Map resp = await API.rawAPICall(auth: auth, path: path);
     var announcements = new AnnouncementResponse.fromJson(resp);
-    return announcements.data;  
+    return announcements.data;
   }
 
   // static String formatQueryArgument(String name, dynamic value) =>
@@ -288,21 +296,21 @@ class API {
 //   load();
 //   var auth = Authentication(
 //           password: env['LUMINUS_PASSWORD'], username: env['LUMINUS_USERNAME']);
-  // print(await API.getUnreadAnnouncements(auth, limit: 1));
-  // print(await API.getActiveAnnouncementsByModule(auth, 'e6cc862f-f579-4414-9139-b5a88784c73c'));
-  // print(await API.getArchivedAnnouncementsByModule(auth, 'e6cc862f-f579-4414-9139-b5a88784c73c'));
-  // List<Announcement> my = await API.getNonArchivedAnnouncementsByModule(auth, 'e6cc862f-f579-4414-9139-b5a88784c73c');
-  // print(my[0].id);
-  // load();
-  // Future<Authentication> auth = Future.delayed(
-  //     Duration(seconds: 3),
-  //     () => Authentication(
-  //         password: env['LUMINUS_PASSWORD'],
-  //         username: env['LUMINUS_USERNAME']));
+// print(await API.getUnreadAnnouncements(auth, limit: 1));
+// print(await API.getActiveAnnouncementsByModule(auth, 'e6cc862f-f579-4414-9139-b5a88784c73c'));
+// print(await API.getArchivedAnnouncementsByModule(auth, 'e6cc862f-f579-4414-9139-b5a88784c73c'));
+// List<Announcement> my = await API.getNonArchivedAnnouncementsByModule(auth, 'e6cc862f-f579-4414-9139-b5a88784c73c');
+// print(my[0].id);
+// load();
+// Future<Authentication> auth = Future.delayed(
+//     Duration(seconds: 3),
+//     () => Authentication(
+//         password: env['LUMINUS_PASSWORD'],
+//         username: env['LUMINUS_USERNAME']));
 
-  // await Future.delayed(const Duration(seconds: 5));
+// await Future.delayed(const Duration(seconds: 5));
 
-  /*   var wrongAuth = Authentication(username: 'e0261956', password: 'asdasd');
+/*   var wrongAuth = Authentication(username: 'e0261956', password: 'asdasd');
     try {
       print(await wrongAuth.getAuth());
     } catch (e) {
