@@ -61,6 +61,6 @@
 
 - Support for new ADFS auth channel
 
-## 0.2.1
+## 0.2.2
 
 - Fixed a minor bug.

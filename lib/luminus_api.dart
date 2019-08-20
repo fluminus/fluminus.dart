@@ -79,7 +79,7 @@ class API {
 
   /// Get active announcements
   /// Populate additional information. Accepted entities: creator, lastUpdatedUser, parent
-  static Future<List<Announcement>> ActiveAnnouncements(
+  static Future<List<Announcement>> getActiveAnnouncements(
       FutureOr<Authentication> auth,
       {String sortby,
       int offset,
