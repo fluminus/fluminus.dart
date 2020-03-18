@@ -3,6 +3,8 @@ A library for Dart developers who's in need of [LumiNUS](https://luminus.nus.edu
 Created from templates made available by Stagehand under a BSD-style
 [license](https://github.com/dart-lang/stagehand/blob/master/LICENSE).
 
+Naming courtesy to https://github.com/indocomsoft/fluminus
+
 ## Usage
 
 A simple usage example:
